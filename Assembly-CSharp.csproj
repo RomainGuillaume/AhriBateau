@@ -64,7 +64,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\Controller\Controller.cs" />
-    <Compile Include="Assets\Scripts\Rift\Rift.cs" />
+    <Compile Include="Assets\Scripts\Main\MainController.cs" />
+    <Compile Include="Assets\Scripts\Main\SingletonSaved.cs" />
+    <Compile Include="Assets\Scripts\Plank\PlankController.cs" />
+    <Compile Include="Assets\Scripts\Plank\PlankEntity.cs" />
+    <Compile Include="Assets\Scripts\Player\PickUp.cs" />
+    <Compile Include="Assets\Scripts\Player\PlayerController.cs" />
+    <Compile Include="Assets\Scripts\Player\PlayerEntity.cs" />
+    <Compile Include="Assets\Scripts\Rift\RiftController.cs" />
+    <Compile Include="Assets\Scripts\Rift\RiftHandler.cs" />
     <Reference Include="Unity.Timeline.Editor">
       <HintPath>D:/Projects/AhriBateau/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
     </Reference>
