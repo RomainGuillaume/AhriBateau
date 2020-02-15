@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\Controller\Controller.cs" />
+    <Compile Include="Assets\Scripts\Rift\Rift.cs" />
     <Reference Include="Unity.Timeline.Editor">
       <HintPath>D:/Projects/AhriBateau/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
     </Reference>
