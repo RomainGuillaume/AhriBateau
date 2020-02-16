@@ -1,66 +1,116 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Plank;
+using Crystal;
 
 namespace Player
 {
     public class PlayerEntity : MonoBehaviour
     {
-        protected bool directionDown = false;
-        protected bool directionUp = false;
-        protected bool directionLeft = false;
-        protected bool directionRight = false;
-        protected bool isValid = false;
+        Vector3 newPos;
+        bool isValid = false;
+        Vector3 direction = Vector3.zero;
+        Rigidbody Rb;
+        float distToGround;
+        float drag;
 
-        public float speed = .01f;
-        public GameObject player;
+        public float maxSpeed = 5f;
+        public bool stop = false;
+        public float speed = 5.75f;
         public int wood = 0;
+        public float gravity = 500f;
+        public GameObject Model3D {
+            get => transform.GetChild(0).gameObject;
+        }
 
         public void AddWood()
         {
             wood++;
         }
 
+        public void Reset(Vector3 newpos)
+        {
+            direction = Vector3.zero;
+            transform.position = newpos;
+            transform.rotation = Quaternion.Euler(0, 0, 0);
+            Rb.velocity = Vector3.zero;
+        }
+
         void Start()
         {
-            isValid = player != null;
+            Rb = GetComponent<Rigidbody>();
+            isValid = Rb != null;
+            distToGround = GetComponent<Collider>().bounds.extents.y;
+            drag = Rb.drag;
         }
 
         void Update()
         {
-            if (isValid)
+            if (isValid && !stop)
             {
-                CheckIfKeyDirectionIsDown();
                 UpdateMovement();
             }
         }
 
         void UpdateMovement()
         {
-            if (directionRight == true)
+            Rb.drag = !IsGrounded() ? 0 : drag;
+
+            direction = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical")) * speed * Time.deltaTime;
+
+            if (direction.x != 0 || direction.z != 0 && !(direction.x == 0 && direction.z == 0))
             {
-                player.transform.position = player.transform.position + new Vector3(speed, 0, 0);
+                Vector3 newAngleDirection = new Vector3(direction.x, 0, direction.z);
+                transform.rotation = Quaternion.LookRotation(newAngleDirection, Vector3.up);
             }
-            if (directionLeft == true)
+
+            if (Rb.velocity.magnitude > maxSpeed)
             {
-                player.transform.position = player.transform.position + new Vector3(-speed, 0, 0);
+                Vector3 limitedVelocity = Vector3.ClampMagnitude(Rb.velocity, maxSpeed);
+                Rb.velocity = new Vector3(limitedVelocity.x, Rb.velocity.y, limitedVelocity.z);
             }
-            if (directionDown == true)
+
+            if (IsGrounded())
             {
-                player.transform.position = player.transform.position + new Vector3(0, 0, -speed);
+                Rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+                Rb.AddForce(direction);
             }
-            if (directionUp == true)
+            else
             {
-                player.transform.position = player.transform.position + new Vector3(0, 0, speed);
+                Rb.constraints = RigidbodyConstraints.None;
             }
         }
 
-        void CheckIfKeyDirectionIsDown()
+        bool IsGrounded() {
+            return Physics.Raycast(transform.position, -Vector3.up, distToGround + 0.1f);
+        }
+
+        void OnTriggerEnter(Collider other)
         {
-            directionRight = Input.GetAxis("Horizontal") > 0f ? true : false;
-            directionLeft = Input.GetAxis("Horizontal") < 0f ? true : false;
-            directionUp = Input.GetAxis("Vertical") > 0f ? true : false;
-            directionDown = Input.GetAxis("Vertical") < 0f ? true : false;
+            PickUp(other);
+        }
+
+        void PickUp(Collider other)
+        {
+            if (other.gameObject.GetComponent<PlankEntity>() != null)
+            {
+                AddWood();
+                Destroy(other.gameObject);
+                PlayerController.Instance.UpdatePlayerPlankCounter(this);
+            }
+
+            if (other.gameObject.GetComponent<CrystalEntity>() != null)
+            {
+                gameObject.GetComponent<PlayerEntity>().AddPotEffect(other.gameObject.GetComponent<CrystalEntity>().color);
+                Destroy(other.gameObject);
+
+            }
+        }
+
+        void AddPotEffect(int crystal)
+        {
+
         }
 
     }

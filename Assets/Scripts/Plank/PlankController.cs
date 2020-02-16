@@ -8,9 +8,11 @@ namespace Plank
 {
     public class PlankController : SingletonSaved<PlankController>
     {
+        protected GameObject terrain { get => MainController.Instance.terrain; }
+        protected Vector3 tSize { get => terrain.GetComponent<Renderer>().bounds.size; }
         float timeLeft = 1.0f;
         public GameObject prefab;
-
+        public float padding = 2f;
         void Update()
         {
             timeLeft -= Time.deltaTime;
@@ -24,7 +26,9 @@ namespace Plank
         void Spawn()
         {
             GameObject newOne = Instantiate(prefab);
-            newOne.transform.position = new Vector3(Random.Range(-10.0f, 10.0f), .4f, Random.Range(-5.0f, 5.0f));
+            float x = Random.Range(-tSize.x / 2 + padding, tSize.x / 2 - padding);
+            float z = Random.Range(-tSize.z / 2 + padding, tSize.z / 2 - padding);
+            newOne.transform.position = new Vector3(x, .4f, z);
             newOne.transform.Rotate(new Vector3(0, Random.Range(-180.0f, 180.0f), 0));
         }
     }

@@ -1,10 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Main;
 
 namespace Plank
 {
-    public class PlankEntity : MonoBehaviour
+    public class PlankEntity : SmallItem
     {
 
     }
