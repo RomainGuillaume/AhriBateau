@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Plank;
 using Crystal;
+using Rift;
 
 namespace Player
 {
@@ -14,7 +15,11 @@ namespace Player
         Rigidbody Rb;
         float distToGround;
         float drag;
+        GameObject currentRift;
+        bool isRepairing = false;
+        float amountRepair = 0f;
 
+        public float speedRepair = 100f;
         public float maxSpeed = 5f;
         public bool stop = false;
         public float speed = 5.75f;
@@ -27,6 +32,13 @@ namespace Player
         public void AddWood()
         {
             wood++;
+            PlayerController.Instance.UpdatePlayerPlankCounter(this);
+        }
+
+        public void RemoveWood(int count = 1)
+        {
+            wood -= count;
+            PlayerController.Instance.UpdatePlayerPlankCounter(this);
         }
 
         public void Reset(Vector3 newpos)
@@ -49,7 +61,13 @@ namespace Player
         {
             if (isValid && !stop)
             {
-                UpdateMovement();
+                if (!isRepairing)
+                {
+                    UpdateMovement();
+                }
+                
+                OnPressFire();
+                UpdateAmountRepair();
             }
         }
 
@@ -89,6 +107,72 @@ namespace Player
         void OnTriggerEnter(Collider other)
         {
             PickUp(other);
+            CollideRift(other, true);
+        }
+
+        void OnTriggerExit(Collider other)
+        {
+            CollideRift(other, false);
+        }
+
+        void UpdateAmountRepair()
+        {
+            if (isRepairing && amountRepair < 100)
+            {
+                amountRepair += speedRepair * Time.deltaTime;
+            }
+            else
+            {
+                if (amountRepair >= 100)
+                {
+                    RemoveWood(2);
+                    RiftController.Instance.RepairComplete(currentRift);
+                }
+
+                amountRepair = 0;
+            }
+        }
+
+        void OnPressFire()
+        {
+            if (Input.GetAxis("Fire1") > 0 && currentRift != null)
+            {
+                if (isRepairing == false)
+                {
+                    amountRepair = 0;
+                    RiftController.Instance.StartRepair(speedRepair);
+
+                    if (currentRift != null)
+                    {
+                        Vector3 target = new Vector3(currentRift.gameObject.transform.position.x, transform.position.y, currentRift.gameObject.transform.position.z);
+                        transform.LookAt(target, Vector3.up);
+                    }
+                }
+
+                isRepairing = true;
+            }
+            else if (isRepairing)
+            {
+                RiftController.Instance.StopRepair();
+                isRepairing = false;
+            }
+        }
+
+        void CollideRift(Collider other, bool toogle)
+        {
+            if (other.gameObject.GetComponent<RiftEntity>() != null)
+            {
+                RiftController.Instance.TogglePanelPress(other.gameObject, toogle);
+
+                if (toogle && currentRift == null && wood >= 2)
+                {
+                    currentRift = other.gameObject;
+                }
+                else if (!toogle)
+                {
+                    currentRift = null;
+                }
+            }
         }
 
         void PickUp(Collider other)
@@ -97,7 +181,6 @@ namespace Player
             {
                 AddWood();
                 Destroy(other.gameObject);
-                PlayerController.Instance.UpdatePlayerPlankCounter(this);
             }
 
             if (other.gameObject.GetComponent<CrystalEntity>() != null)

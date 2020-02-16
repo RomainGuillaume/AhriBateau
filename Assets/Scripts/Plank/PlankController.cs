@@ -15,15 +15,10 @@ namespace Plank
         public float padding = 2f;
         void Update()
         {
-            timeLeft -= Time.deltaTime;
-            if (timeLeft < 0)
-            {
-                Spawn();
-                timeLeft = 1.0f;
-            }
+
         }
 
-        void Spawn()
+        public void Spawn()
         {
             GameObject newOne = Instantiate(prefab);
             float x = Random.Range(-tSize.x / 2 + padding, tSize.x / 2 - padding);

@@ -13,11 +13,11 @@ namespace Player
         bool isValid = false;
         float timeElapsed = 0f;
         int lifesMax = 0;
-        float defaultSizeHpBar;
 
-        public GameObject hpBar;
+        public UI.Test hpBar;
         public float timeoutRespawn = 0.5f;
-        public int lifes = 5;
+        public int lifesLostByFall = 5;
+        public int lifes = 100;
         public int scores = 0;
         public GameObject playerPrefab;
         public GameObject spawner;
@@ -33,12 +33,16 @@ namespace Player
             plankCounterText.text = player.wood.ToString();
         }
 
+        public void CauseDamages(int damage)
+        {
+            lifes -= damage;
+        }
+
         void Start()
         {
             isValid = playerPrefab != null && spawner != null && hpBar != null;
 
             lifesMax = lifes;
-            defaultSizeHpBar = hpBar.GetComponent<RectTransform>().rect.width;
 
             if (isValid)
             {
@@ -75,14 +79,9 @@ namespace Player
             }
         }
 
-        void UpdatePlanks()
-        {
-
-        }
-
         void UpdateLife()
         {
-            hpBar.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, lifes * defaultSizeHpBar / lifesMax);
+            hpBar.current = lifesMax - lifes;        
         }
 
         void UpdatePlayer()
@@ -92,7 +91,7 @@ namespace Player
                 timeElapsed = 0f;
                 playerHasFall = true;
                 _player.stop = true;
-                lifes--;
+                lifes -= lifesLostByFall;
             }
 
             if (playerHasFall && timeElapsed < timeoutRespawn)
